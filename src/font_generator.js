@@ -70,7 +70,7 @@ const FONT_GENERATORS = {
       sortedFiles.forEach((file) => {
 
         // put timestamp of file.
-        fileMTimes[file] = fs.statSync(file).mtime.getTime();
+        fileMTimes[path.parse(file).base] = fs.statSync(file).mtime.getTime();
 
       });
 
