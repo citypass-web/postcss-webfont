@@ -11,6 +11,7 @@ const svg2ttf                   = require('svg2ttf');
 const ttf2woff                  = require('ttf2woff');
 const ttf2woff2                 = require('ttf2woff2');
 const ttf2eot                   = require('ttf2eot');
+const crypto                    = require('crypto');
 
 // Cache key for svg font table
 const CACHE_KEY_SVG_FONT_TABLE = 'cacheSVGFontTable';
@@ -62,15 +63,17 @@ const FONT_GENERATORS = {
       const cacheSVGFontTable = options.fileCache.get(CACHE_KEY_SVG_FONT_TABLE) || {};
       const fontStream        = new SVGIcons2SVGFontStream(options.fontOptions);
       const sortedFiles       = options.files.slice(0).sort((file1, file2) => fileSorter(file1, file2));
-      const fileMTimes        = {};
+      const MD5FileHash       = {};
       const simpleGlyphs      = [];
       let   fontBuffer        = Buffer.alloc(0);
 
       // for each sorted files.
       sortedFiles.forEach((file) => {
 
+        const fileBuffer = fs.readFileSync(file);
+        const hash = crypto.createHash('md5').update(fileBuffer).digest('hex');
         // put timestamp of file.
-        fileMTimes[path.parse(file).base] = fs.statSync(file).mtime.getTime();
+        MD5FileHash[file.replace(process.cwd(), '')] = hash;
 
       });
 
@@ -78,8 +81,8 @@ const FONT_GENERATORS = {
       const cacheSVGFont = cacheSVGFontTable[options.fontOptions.fontName];
 
       // Has cache?
-      // and equals length of fileMTimes?
-      if (cacheSVGFont && Object.keys(cacheSVGFont.fileMTimes).length === Object.keys(fileMTimes).length) {
+      // and equals length of MD5FileHash?
+      if (cacheSVGFont && Object.keys(cacheSVGFont.MD5FileHash).length === Object.keys(MD5FileHash).length) {
 
         let isUpdated = false;
 
@@ -87,10 +90,10 @@ const FONT_GENERATORS = {
         if (existsFontFiles(options)) {
 
           // for each svg files
-          Object.keys(cacheSVGFont.fileMTimes).some((key) => {
+          Object.keys(cacheSVGFont.MD5FileHash).some((key) => {
 
             // not equals mtime?
-            if (!(key in fileMTimes) || fileMTimes[key] !== cacheSVGFont.fileMTimes[key]) {
+            if (!(key in MD5FileHash) || MD5FileHash[key] !== cacheSVGFont.MD5FileHash[key]) {
 
               // require updating
               isUpdated = true;
@@ -154,7 +157,7 @@ const FONT_GENERATORS = {
         // cache svg font
         cacheSVGFontTable[options.fontOptions.fontName] = {
           simpleGlyphs,
-          fileMTimes,
+          MD5FileHash,
           svgHash,
         };
         options.fileCache.set(CACHE_KEY_SVG_FONT_TABLE, cacheSVGFontTable);
