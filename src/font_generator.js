@@ -462,7 +462,7 @@ module.exports = (options) => {
   usingOptions.cachePath && fs.mkdirsSync(path.dirname(usingOptions.cachePath));
 
   // creates file cache
-  usingOptions.fileCache = fileCache.create({ file: usingOptions.cachePath });
+  usingOptions.fileCache = fileCache.create({ file: usingOptions.cachePath, life: usingOptions.cacheTTL });
 
   return new Promise((resolve, reject) => {
 

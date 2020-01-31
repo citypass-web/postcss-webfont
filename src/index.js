@@ -21,6 +21,7 @@ const defaultOptions = {
   classNamePrefixAfter: 'after',
   cachebuster: 'hash',
   cachebusterFixed: '',
+  cacheTTL: 60 * 60,
 
 };
 

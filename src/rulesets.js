@@ -67,6 +67,7 @@ const createFonts = (iconFont, rulesets, options) => {
       files,
       dest: path.resolve(options.outputPath),
       cachePath: options.cachePath,
+      cacheTTL: options.cacheTTL,
       fontOptions: {
         formats: options.formats,
         fontName: iconFont.fontName,
